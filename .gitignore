@@ -1,2 +1,4 @@
 .DS_Store
 .next
+.venv
+apps/api/__pycache__
