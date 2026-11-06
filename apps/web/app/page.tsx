@@ -32,19 +32,29 @@ export default function Home() {
           <div className="welcome-orbit" aria-hidden="true">
             <div className="orbit-ring orbit-ring-outer" />
             <div className="orbit-ring orbit-ring-inner" />
-            <div className="orbit-core"><span className="sparkle">✳</span></div>
+            <div className="orbit-core">
+              <span className="sparkle">✳</span>
+            </div>
             <span className="orbit-dot orbit-dot-one" />
             <span className="orbit-dot orbit-dot-two" />
           </div>
-          <p className="eyebrow">CALENDAR COPILOT <span /> TWÓJ KALENDARZ</p>
-          <h1>Co masz<br /><em>w planach?</em></h1>
+          <p className="eyebrow">
+            CALENDAR COPILOT <span /> TWÓJ KALENDARZ
+          </p>
+          <h1>
+            Co masz
+            <br />
+            <em>w planach?</em>
+          </h1>
           <p className="welcome-copy">Przeglądaj wydarzenia i planuj kolejne z pomocą asystenta.</p>
           <div className="suggestions" aria-label="Przykładowe pytania">
             {suggestions.map((suggestion, index) => (
               <div className="suggestion" key={suggestion}>
                 <span className="suggestion-index">0{index + 1}</span>
                 <span>{suggestion}</span>
-                <span className="suggestion-arrow" aria-hidden="true">↗</span>
+                <span className="suggestion-arrow" aria-hidden="true">
+                  ↗
+                </span>
               </div>
             ))}
           </div>
@@ -58,8 +68,16 @@ export default function Home() {
               rows={1}
               disabled
             />
-            <button className="send-button" type="button" title="Wyślij wiadomość" aria-label="Wyślij wiadomość" disabled>
-              <span className="send-icon" aria-hidden="true">↑</span>
+            <button
+              className="send-button"
+              type="button"
+              title="Wyślij wiadomość"
+              aria-label="Wyślij wiadomość"
+              disabled
+            >
+              <span className="send-icon" aria-hidden="true">
+                ↑
+              </span>
             </button>
           </div>
           <div className="composer-meta">
