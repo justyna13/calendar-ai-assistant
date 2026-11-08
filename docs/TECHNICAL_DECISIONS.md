@@ -11,7 +11,8 @@ Ten dokument przechowuje zatwierdzone wybory oraz kwestie, ktore trzeba rozstrzy
 | Backend | Python + FastAPI | Jedno miejsce na logike, walidacje oraz komunikacje z Google i LLM. |
 | Baza na start | Lokalny SQLite + SQLAlchemy | Brak osobnego serwera bazy podczas nauki; SQLAlchemy utrzymuje warstwe dostepu do danych odseparowana od routingu. |
 | Baza pozniej | PostgreSQL jako mozliwy kolejny krok | Przed migracja trzeba sprawdzic roznice dialektow, migracje i testy na docelowej bazie. |
-| Uwierzytelnianie | Google OAuth zalogowanego uzytkownika; bez service account | Uzytkownik udziela dostepu do swojego kalendarza. |
+| Uwierzytelnianie | Google OAuth zalogowanego uzytkownika; bez service account | Frontend rozpoczyna logowanie nawigacja do FastAPI; callback weryfikuje `state` i wymienia kod po stronie backendu. |
+| Tokeny Google | Access token pozostaje po stronie backendu; refresh token jest przechowywany w SQLite w postaci zaszyfrowanej | Przegladarka otrzymuje tylko sesje w cookie `HttpOnly`; szczegoly cyklu zycia sesji i zarzadzania kluczem szyfrujacym pozostaja do ustalenia. |
 | Wlasciciel integracji | FastAPI komunikuje sie z Google Calendar i OpenAI | Frontend nie otrzymuje sekretow dostawcow ani tokenow Google. |
 | Tool calling | Model zwraca ustrukturyzowane wywolania narzedzi; backend waliduje argumenty i sam wykonuje operacje | Model nie dostaje tokenow i nie wykonuje wlasnych HTTP requestow. |
 | Zmiana danych | Propozycja zapisana jako `pending_event`; zapis dopiero po osobnym potwierdzeniu w UI | Wywolanie `propose_calendar_event` samo w sobie nie moze zapisac wydarzenia. |
@@ -36,7 +37,7 @@ Przeplyw zapisu:
 
 ## Zmienne srodowiskowe
 
-Nazwy sa propozycja do potwierdzenia podczas konfiguracji. Dokladny zestaw zalezy od wybranego mechanizmu sesji i szyfrowania tokenow.
+Nazwy sa propozycja do potwierdzenia podczas konfiguracji. Dokladny zestaw zalezy od wybranego mechanizmu sesji i zarzadzania kluczem szyfrujacym.
 
 **Frontend (`apps/web`, lokalny plik `.env.local`):**
 
@@ -57,7 +58,7 @@ Nazwy sa propozycja do potwierdzenia podczas konfiguracji. Dokladny zestaw zalez
 - Nie commitowac `.env`, `.env.local`, pliku SQLite, tokenow, kodow OAuth ani kluczy API.
 - Przygotowac przykladowy plik srodowiskowy z pustymi wartosciami dopiero, gdy nazwy konfiguracji beda ustalone.
 - Nigdy nie umieszczac sekretow backendu w `NEXT_PUBLIC_*`.
-- Refresh token jest dlugotrwalym sekretem: przed Etapem 3 trzeba zdecydowac, jak jest chroniony w bazie oraz jak ograniczyc dostep do sesji.
+- Refresh token jest dlugotrwalym sekretem i bedzie przechowywany w SQLite w postaci zaszyfrowanej; sposob przechowywania klucza szyfrujacego i ograniczania sesji nadal wymaga ustalenia.
 - Nie logowac access/refresh tokenow, kluczy API ani pelnych danych wrazliwych.
 - Walidowac kazdy argument narzedzia po stronie backendu; nie ufac samemu schematowi zwroconemu przez model.
 - Potwierdzenie musi dotyczyc konkretnego draftu, uzytkownika i oczekujacego statusu. Ponowne potwierdzenie nie moze tworzyc duplikatu.
@@ -65,10 +66,10 @@ Nazwy sa propozycja do potwierdzenia podczas konfiguracji. Dokladny zestaw zalez
 
 ## Otwarte decyzje
 
-Przed Etapem 3 omowic i zapisac:
+Przed implementacja callbacku i zapisem tokenow omowic i zapisac:
 
-1. Mechanizm sesji frontend-backend, a w szczegolnosci cookie `HttpOnly`, `Secure`, `SameSite`, ochrone CSRF oraz lokalne ustawienia dla roznych portow.
-2. Szyfrowanie refresh tokenow w spoczynku i miejsce przechowywania klucza. Plik SQLite jest lokalny, ale sam w sobie nie szyfruje danych.
+1. Szczegoly sesji frontend-backend: zawartosc cookie, `Secure`, `SameSite`, ochrona CSRF i lokalne ustawienia dla roznych portow. Potwierdzono, ze cookie ma byc `HttpOnly` i nie bedzie zawierac tokenow Google.
+2. Sposob przechowywania i rotacji klucza szyfrujacego refresh tokeny. SQLite sam w sobie nie szyfruje danych.
 3. Model danych uzytkownika i draftu oraz sposob przypisania tokenow i propozycji do zalogowanego uzytkownika.
 4. Dokladne zakresy Google OAuth i wymagane ustawienia ekranu zgody.
 5. Czy i kiedy dodac Alembic do migracji schematu SQLite/PostgreSQL.
