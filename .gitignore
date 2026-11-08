@@ -2,3 +2,4 @@
 .next
 .venv
 apps/api/__pycache__
+.vscode

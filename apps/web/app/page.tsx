@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ApiHealth from "@/app/components/ApiHealth";
 
 const suggestions = [
   "Co mam w przyszłym tygodniu?",
@@ -21,6 +22,7 @@ export default function Home() {
         </Link>
         <div className="topbar-right">
           <span className="model-status">
+            <ApiHealth />
             <span className="status-dot" />
             asystent kalendarza
           </span>
