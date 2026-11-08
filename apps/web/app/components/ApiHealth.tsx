@@ -12,21 +12,20 @@ const statusLabels: Record<ApiHealthStatus, string> = {
 };
 
 export default function ApiHealth() {
+  const [currentStatus, setCurrentStatus] = useState<ApiHealthStatus>("checking");
 
-    const [currentStatus, setCurrentStatus] =  useState<ApiHealthStatus>("checking");
-
-    const checkStatus = async (): Promise<ApiHealthStatus> => {
-        try {
-            await getHealth();
-            return "available";
-        } catch {
-            return "unavailable";
-        }
+  const checkStatus = async (): Promise<ApiHealthStatus> => {
+    try {
+      await getHealth();
+      return "available";
+    } catch {
+      return "unavailable";
     }
+  };
 
-    useEffect(() => {
-        checkStatus().then((status) => setCurrentStatus(status));
-    }, [])
+  useEffect(() => {
+    checkStatus().then((status) => setCurrentStatus(status));
+  }, []);
 
   return (
     <span
