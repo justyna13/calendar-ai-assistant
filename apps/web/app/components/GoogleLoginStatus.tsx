@@ -26,7 +26,7 @@ export default function GoogleLoginStatus() {
 
         try {
             await logout();
-            setSession({ authenticated: false, email: null });
+            window.location.reload();
         } catch {
             setLogoutError(true);
         } finally {
