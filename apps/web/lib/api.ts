@@ -46,3 +46,40 @@ export const logout = async (): Promise<void> => {
         throw Error("Logout failed");
     }
 }
+
+export type TCalendarEvent = {
+    id: string;
+    summary?: string;
+    start: {
+        dateTime?: string;
+        date?: string;
+    };
+    end: {
+        dateTime?: string;
+        date?: string;
+    };
+};
+
+export const getCalendarEvents = async (
+    timeMin: string,
+    timeMax: string,
+): Promise<TCalendarEvent[]> => {
+    const query = new URLSearchParams({
+        time_min: timeMin,
+        time_max: timeMax,
+    });
+
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/calendar/events?${query}`,
+        {
+            credentials: "include",
+            cache: "no-store",
+        },
+    );
+
+    if (!response.ok) {
+        throw Error("Calendar events request failed");
+    }
+
+    return response.json();
+}

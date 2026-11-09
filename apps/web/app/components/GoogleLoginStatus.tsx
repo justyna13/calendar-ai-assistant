@@ -37,7 +37,7 @@ export default function GoogleLoginStatus() {
     if (session === null) {
         return (
             <span role="status">
-                {isAvailable ? "Checking..." : "Login not available"}
+                {isAvailable ? "Checking sign-in…" : "Unable to check sign-in status"}
             </span>
         );
     }
@@ -61,7 +61,7 @@ export default function GoogleLoginStatus() {
         >
             | {isLoggingOut ? "Signing out..." : "Sign out"}
         </button>
-        {logoutError && <span role="alert">Sorry, couldn't logout</span>}
+        {logoutError && <span role="alert">Couldn&apos;t sign out. Please try again.</span>}
         </>
     )
 }

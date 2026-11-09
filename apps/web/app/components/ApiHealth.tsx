@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 type ApiHealthStatus = "checking" | "available" | "unavailable";
 
 const statusLabels: Record<ApiHealthStatus, string> = {
-  checking: "Sprawdzam API…",
-  available: "API dostępne",
-  unavailable: "API niedostępne",
+  checking: "Checking API…",
+  available: "API available",
+  unavailable: "API unavailable",
 };
 
 export default function ApiHealth() {

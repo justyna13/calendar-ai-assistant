@@ -20,13 +20,13 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "Calendar Copilot",
-  description: "Asystent do planowania wydarzeń w Google Calendar.",
+  description: "An assistant for planning events in Google Calendar.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="pl"
+      lang="en"
       className={`${dmSans.variable} ${dmMono.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

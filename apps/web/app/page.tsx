@@ -1,18 +1,19 @@
 import Link from "next/link";
 import ApiHealth from "@/app/components/ApiHealth";
 import GoogleLoginStatus from "./components/GoogleLoginStatus";
+import CalendarEvents from "./components/CalendarEvents";
 
 const suggestions = [
-  "Co mam w przyszłym tygodniu?",
-  "Czy mam wolne w piątek po 17:00?",
-  "Dodaj trening we wtorek o 18:00 na godzinę.",
+  "What's on my calendar next week?",
+  "Am I free this Friday after 5 PM?",
+  "Add a one-hour workout for Tuesday at 6 PM.",
 ];
 
 export default function Home() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <Link className="brand" href="/" aria-label="Calendar Copilot, strona główna">
+        <Link className="brand" href="/" aria-label="Calendar Copilot home">
           <span className="brand-mark" aria-hidden="true">
             <span />
             <span />
@@ -28,7 +29,7 @@ export default function Home() {
             <ApiHealth />
             <span>|</span>
             <span className="status-dot" />
-            asystent kalendarza
+            Calendar assistant
           </span>
         </div>
       </header>
@@ -45,15 +46,17 @@ export default function Home() {
             <span className="orbit-dot orbit-dot-two" />
           </div>
           <p className="eyebrow">
-            CALENDAR COPILOT <span /> TWÓJ KALENDARZ
+            CALENDAR COPILOT <span /> YOUR CALENDAR
           </p>
           <h1>
-            Co masz
+            What&apos;s on
             <br />
-            <em>w planach?</em>
+            <em>your calendar?</em>
           </h1>
-          <p className="welcome-copy">Przeglądaj wydarzenia i planuj kolejne z pomocą asystenta.</p>
-          <div className="suggestions" aria-label="Przykładowe pytania">
+          <p className="welcome-copy">
+            Browse upcoming events and plan your next step with the assistant.
+          </p>
+          <div className="suggestions" aria-label="Example questions">
             {suggestions.map((suggestion, index) => (
               <div className="suggestion" key={suggestion}>
                 <span className="suggestion-index">0{index + 1}</span>
@@ -64,21 +67,22 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <CalendarEvents />
         </div>
 
         <div className="composer-wrap">
-          <div className="composer" aria-label="Pole wiadomości asystenta">
+          <div className="composer" aria-label="Assistant message composer">
             <textarea
-              aria-label="Wiadomość do asystenta"
-              placeholder="Zapytaj o swój kalendarz..."
+              aria-label="Message your assistant"
+              placeholder="Ask about your calendar..."
               rows={1}
               disabled
             />
             <button
               className="send-button"
               type="button"
-              title="Wyślij wiadomość"
-              aria-label="Wyślij wiadomość"
+              title="Send message"
+              aria-label="Send message"
               disabled
             >
               <span className="send-icon" aria-hidden="true">
@@ -89,7 +93,7 @@ export default function Home() {
           <div className="composer-meta">
             <span>GOOGLE CALENDAR</span>
             <span className="meta-divider" />
-            <span>WYMAGA POŁĄCZENIA</span>
+            <span>CONNECTION REQUIRED</span>
           </div>
         </div>
       </section>
