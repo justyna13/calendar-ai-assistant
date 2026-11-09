@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ApiHealth from "@/app/components/ApiHealth";
+import GoogleLoginStatus from "./components/GoogleLoginStatus";
 
 const suggestions = [
   "Co mam w przyszłym tygodniu?",
@@ -21,8 +22,11 @@ export default function Home() {
           <span>Calendar Copilot</span>
         </Link>
         <div className="topbar-right">
-          <span className="model-status">
+          <span className="model-status flex gap-2">
+            <GoogleLoginStatus />
+            <span>|</span>
             <ApiHealth />
+            <span>|</span>
             <span className="status-dot" />
             asystent kalendarza
           </span>

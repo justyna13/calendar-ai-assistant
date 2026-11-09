@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     google_client_id: str
     google_client_secret: SecretStr
     google_redirect_uri: str
+    database_url: str = f"sqlite:///{API_DIR / 'calendar_assistant.db'}"
+    token_encryption_key: SecretStr
+    frontend_origin: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(
         env_file=API_DIR / ".env",

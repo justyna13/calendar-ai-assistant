@@ -1,10 +1,20 @@
 import secrets
+import hashlib
 
-from fastapi import APIRouter, HTTPException, Request
+from datetime import datetime, timedelta, timezone
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from google_auth_oauthlib.flow import Flow
+from google.auth.transport.requests import Request as GoogleRequest
+from google.oauth2 import id_token
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from config.settings import settings
+from database import get_db
+from models.google_account import GoogleAccount
+from models.google_session import GoogleSession
+from services.token_crypto import encrypt_token
 
 router = APIRouter()
 
@@ -34,6 +44,7 @@ def google_auth() -> RedirectResponse:
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
+        prompt="consent",
     )
 
     response = RedirectResponse(authorization_url, status_code=302)
@@ -64,7 +75,10 @@ def google_auth() -> RedirectResponse:
     return response
 
 @router.get("/auth/callback")
-def google_callback(request: Request) -> JSONResponse:
+def google_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> RedirectResponse:
     oauth_error = request.query_params.get("error")
     if oauth_error:
         raise HTTPException(
@@ -99,7 +113,119 @@ def google_callback(request: Request) -> JSONResponse:
     )
     flow.fetch_token(authorization_response=str(request.url))
 
-    response = JSONResponse({"message": "Google authorization successful"})
-    response.delete_cookie("oauth_state", path="/auth")
+    id_token_value = flow.credentials.id_token
+    if not id_token_value:
+        raise HTTPException(status_code=400, detail="Google ID token is missing")
 
+    try:
+        claims = id_token.verify_oauth2_token(
+            id_token_value,
+            GoogleRequest(),
+            audience=settings.google_client_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail="Invalid Google Id token") from exc
+
+    google_sub = claims.get("sub")
+
+    if not google_sub or claims.get("email_verified") is not True:
+        raise HTTPException(status_code=401, detail="Google account could not be verified")
+
+    email = claims.get("email")
+    refresh_token = flow.credentials.refresh_token
+
+    account = db.scalar(
+        select(GoogleAccount).where(GoogleAccount.google_sub == google_sub)
+    )
+
+    if account is None:
+        if not refresh_token:
+            raise HTTPException(status_code=400, detail="Google refresh token is missing")
+
+        account = GoogleAccount(
+            google_sub=google_sub,
+            email=email,
+            refresh_token_encrypted=encrypt_token(refresh_token),
+            granted_scopes=flow.credentials.scopes or [],
+        )
+        db.add(account)
+    else:
+        account.email = email
+        if refresh_token:
+            account.refresh_token_encrypted = encrypt_token(refresh_token)
+        account.granted_scopes = flow.credentials.scopes or account.granted_scopes
+
+    db.flush()
+
+    session_token = secrets.token_urlsafe(32)
+    db.add(
+        GoogleSession(
+            token_hash=hashlib.sha256(session_token.encode("utf-8")).hexdigest(),
+            account_id=account.id,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+        )
+    )
+    db.commit()
+
+    response = RedirectResponse(settings.frontend_origin, status_code=303)
+    response.set_cookie(
+        key="session",
+        value=session_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60,
+        path="/",
+    )
+    response.delete_cookie("oauth_state", path="/auth")
+    response.delete_cookie("oauth_code_verifier", path="/auth")
+
+    return response
+
+@router.get("/auth/session")
+def get_session_status(
+    request: Request,
+    db: Session = Depends(get_db),
+) -> dict[str, bool | str | None]:
+    session_token = request.cookies.get("session")
+    if not session_token:
+        return {"authenticated": False, "email": None}
+
+    token_hash = hashlib.sha256(session_token.encode("utf-8")).hexdigest()
+    session = db.get(GoogleSession, token_hash)
+    if session is None:
+        return {"authenticated": False, "email": None}
+
+    expires_at = session.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    if expires_at <= datetime.now(timezone.utc):
+        db.delete(session)
+        db.commit()
+        return {"authenticated": False, "email": None}
+
+    account = db.get(GoogleAccount, session.account_id)
+    if account is None:
+        return {"authenticated": False, "email": None}
+
+    return {"authenticated": True, "email": account.email}
+
+@router.post("/auth/logout")
+def logout(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> JSONResponse:
+    session_token = request.cookies.get("session")
+
+    if session_token:
+        token_hash = hashlib.sha256(session_token.encode("utf-8")).hexdigest()
+        session = db.get(GoogleSession, token_hash)
+
+        if session is not None:
+            db.delete(session)
+            db.commit()
+
+    response = JSONResponse({"authenticated": False})
+    response.delete_cookie("session", path="/")
     return response
