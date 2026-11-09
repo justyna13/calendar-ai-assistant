@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from google.auth.exceptions import RefreshError
+from googleapiclient.errors import HttpError
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -36,4 +38,19 @@ def get_calendar_events(
     if account is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
-    return list_events(account, time_min, time_max)
+    try:
+        return list_events(account, time_min, time_max)
+    except RefreshError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Google authorization could not be refreshed. Please sign in again.",
+        ) from exc
+    except HttpError as exc:
+        google_status = getattr(exc.resp, "status", None)
+
+        if google_status == 403:
+            detail = "Google Calendar denied access. Check the app's Calendar permissions."
+        else:
+            detail = "Google Calendar is temporarily unavailable."
+
+        raise HTTPException(status_code=502, detail=detail) from exc

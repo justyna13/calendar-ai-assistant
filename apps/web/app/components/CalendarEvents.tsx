@@ -26,6 +26,7 @@ function formatEventStart(event: TCalendarEvent): string {
 export default function CalendarEvents() {
   const [events, setEvents] = useState<TCalendarEvent[]>([]);
   const [state, setState] = useState<LoadState>("loading");
+  const [errorMessage, setErrorMessage] = useState("Couldn't load events.");
 
   useEffect(() => {
     async function loadEvents() {
@@ -47,7 +48,10 @@ export default function CalendarEvents() {
 
         setEvents(calendarEvents);
         setState("ready");
-      } catch {
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Couldn't load events.",
+        );
         setState("error");
       }
     }
@@ -57,7 +61,7 @@ export default function CalendarEvents() {
 
   if (state === "loading") return <p>Loading events…</p>;
   if (state === "signed-out") return <p>Connect your Google account to view events.</p>;
-  if (state === "error") return <p>Couldn&apos;t load events.</p>;
+  if (state === "error") return <p>{errorMessage}</p>;
   if (events.length === 0) return <p>No events in the next 7 days.</p>;
 
   return (

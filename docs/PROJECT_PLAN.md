@@ -43,13 +43,15 @@ Edycja lub anulowanie oczekujacej propozycji w UI nie oznacza edycji wydarzenia 
 
 ### Etap 0: Plan i setup
 
-**Status:** decyzje architektoniczne zatwierdzone; konfiguracja projektu bedzie realizowana wraz z Etapem 1.
+**Status:** ukonczony. Uzgodniono zakres MVP i architekture projektu.
 
 **Zakres:** struktura monorepo, stos technologiczny, zmienne srodowiskowe, zasady Git i zakres MVP.
 
 **Kryterium:** uzytkowniczka akceptuje kierunek. Uzgodnione wybory zapisane sa w [TECHNICAL_DECISIONS.md](TECHNICAL_DECISIONS.md).
 
 ### Etap 1: Szkielet Next.js
+
+**Status:** ukonczony lokalnie; strona dziala, a lint przechodzi.
 
 **Cel:** uruchomic frontend i poznac podstawowa strukture Next.js App Router.
 
@@ -59,6 +61,8 @@ Edycja lub anulowanie oczekujacej propozycji w UI nie oznacza edycji wydarzenia 
 
 ### Etap 2: Szkielet FastAPI
 
+**Status:** ukonczony lokalnie; API uruchamia sie, health check i CORS sa skonfigurowane.
+
 **Cel:** uruchomic osobne API i zrozumiec granice miedzy routingiem a logika biznesowa.
 
 **Zadania:** utworzyc `apps/api` i wirtualne srodowisko; dodac `GET /health`; skonfigurowac CORS dla lokalnego frontendu; przygotowac miejsca na routing, services, schemas i config.
@@ -66,6 +70,8 @@ Edycja lub anulowanie oczekujacej propozycji w UI nie oznacza edycji wydarzenia 
 **Kryteria:** API uruchamia sie lokalnie, health check zwraca sukces, frontend moze wykonac probne zapytanie, a zaleznosci sa odseparowane od frontendu.
 
 ### Etap 3: Google OAuth 2.0
+
+**Status:** ukonczony dla lokalnego MVP. OAuth, weryfikacja ID tokena, zapis zaszyfrowanego refresh tokena, sesja, status logowania i logout zostaly recznie sprawdzone. Ustawienia produkcyjne sesji pozostaja poza zakresem.
 
 **Cel:** uwierzytelnic uzytkownika Google i bezpiecznie obsluzyc jego tokeny.
 
@@ -75,17 +81,21 @@ Edycja lub anulowanie oczekujacej propozycji w UI nie oznacza edycji wydarzenia 
 
 ### Etap 4: Odczyt kalendarza bez AI
 
+**Status:** w trakcie. Endpoint pobiera wydarzenia dla podanego zakresu, sprawdza sesje i strefe czasowa; frontend wyswietla najblizsze 7 dni jako podglad integracji. Do zrobienia: czytelna obsluga bledow Google. Nie dodajemy osobnego selektora dat; zakres wybierze czat w Etapie 5.
+
 **Cel:** sprawdzic integracje z Google Calendar niezaleznie od LLM.
 
-**Zadania:** dodac endpoint pobierajacy wydarzenia w zakresie; pokazac wybrany tydzien w UI; ustalic obsluge strefy czasowej; obsluzyc brak autoryzacji, wygasle tokeny i bledy Google.
+**Zadania:** dodac endpoint pobierajacy wydarzenia w dowolnym zakresie; pokazac najblizsze 7 dni jako prosty podglad; ustalic obsluge strefy czasowej; obsluzyc brak autoryzacji, wygasle tokeny i bledy Google. Wybor zakresu na podstawie wiadomosci nalezy do Etapu 5.
 
 **Kryteria:** reczny flow logowania i odczytu dziala dla zakresu dat, a bledy sa pokazane w zrozumialy sposob.
 
 ### Etap 5: Tool calling - odczyt
 
+**Status:** przed rozpoczeciem. Wybrany lokalny dostawca LLM: Ollama z modelem `qwen3:latest`, przez API zgodne z OpenAI; konfiguracja i tool calling sa nastepnymi zadaniami.
+
 **Cel:** polaczyc wiadomosc uzytkownika z bezpiecznym odczytem kalendarza przez tool calling.
 
-**Zadania:** zdefiniowac `get_calendar_events` z `timeMin`, `timeMax` i opcjonalnym `query`; dodac `/api/chat`; zaimplementowac petle model -> tool call -> walidacja i wykonanie w backendzie -> wynik -> odpowiedz modelu; logowac wywolania bez sekretow.
+**Zadania:** zdefiniowac `get_calendar_events` z `timeMin`, `timeMax` i opcjonalnym `query`, tak aby model dobieral zakres do prosby uzytkownika; dodac `/api/chat`; zaimplementowac petle model -> tool call -> walidacja i wykonanie w backendzie -> wynik -> odpowiedz modelu; logowac wywolania bez sekretow.
 
 **Kryteria:** pytanie o plan uruchamia narzedzie, backend waliduje argumenty, a model formuluje odpowiedz na podstawie wyniku. Niepoprawne argumenty i bledy integracji sa obslugiwane.
 

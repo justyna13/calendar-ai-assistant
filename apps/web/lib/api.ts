@@ -78,7 +78,11 @@ export const getCalendarEvents = async (
     );
 
     if (!response.ok) {
-        throw Error("Calendar events request failed");
+        const errorBody = (await response.json().catch(() => null)) as {
+            detail?: string;
+        } | null;
+
+        throw Error(errorBody?.detail ?? "Calendar events request failed");
     }
 
     return response.json();
