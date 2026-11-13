@@ -81,7 +81,7 @@ Edycja lub anulowanie oczekujacej propozycji w UI nie oznacza edycji wydarzenia 
 
 ### Etap 4: Odczyt kalendarza bez AI
 
-**Status:** w trakcie. Endpoint pobiera wydarzenia dla podanego zakresu, sprawdza sesje i strefe czasowa; frontend wyswietla najblizsze 7 dni jako podglad integracji. Do zrobienia: czytelna obsluga bledow Google. Nie dodajemy osobnego selektora dat; zakres wybierze czat w Etapie 5.
+**Status:** ukonczony lokalnie. Endpoint pobiera wydarzenia dla podanego zakresu, sprawdza sesje i strefe czasowa; frontend wyswietla najblizsze 7 dni jako podglad integracji. Bledy autoryzacji i Google Calendar sa mapowane na czytelne odpowiedzi API.
 
 **Cel:** sprawdzic integracje z Google Calendar niezaleznie od LLM.
 
@@ -91,7 +91,7 @@ Edycja lub anulowanie oczekujacej propozycji w UI nie oznacza edycji wydarzenia 
 
 ### Etap 5: Tool calling - odczyt
 
-**Status:** przed rozpoczeciem. Wybrany lokalny dostawca LLM: Ollama z modelem `qwen3:latest`, przez API zgodne z OpenAI; konfiguracja i tool calling sa nastepnymi zadaniami.
+**Status:** ukonczony lokalnie. Ollama z modelem `qwen3:latest` obsluguje odczyt przez tool calling; recznie sprawdzono pytania o wydarzenia w zakresie dat oraz najblizsze wydarzenie. Backend waliduje argumenty, loguje wykonanie narzedzia bez argumentow i mapuje bledy Google na czytelne odpowiedzi.
 
 **Cel:** polaczyc wiadomosc uzytkownika z bezpiecznym odczytem kalendarza przez tool calling.
 

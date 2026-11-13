@@ -1,4 +1,5 @@
 import json
+import logging
 import unicodedata
 from datetime import date, datetime, timezone
 from typing import Any
@@ -17,6 +18,7 @@ from services.google_calendar import get_calendar_events_form_google
 from services.session_store import get_account_for_session
 
 router = APIRouter(prefix="/api", tags=["chat"])
+logger = logging.getLogger(__name__)
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
@@ -74,6 +76,20 @@ def format_next_event(events: list[dict[str, Any]], current_time: datetime) -> s
         return f"Najbliższe wydarzenie: {when} — {title}"
 
     return "Nie widzę nadchodzących wydarzeń w Twoim kalendarzu."
+
+
+def google_calendar_http_exception(exc: RefreshError | HttpError) -> HTTPException:
+    if isinstance(exc, RefreshError):
+        detail = "Google authorization could not be refreshed. Please sign in again."
+    else:
+        google_status = getattr(exc.resp, "status", None)
+        detail = (
+            "Google Calendar denied access. Check the app's Calendar permissions."
+            if google_status == 403
+            else "Google Calendar is temporarily unavailable."
+        )
+
+    return HTTPException(status_code=502, detail=detail)
 
 def validate_calendar_tool_args(raw_args: dict[str, Any]) -> dict[str, str]:
     if not isinstance(raw_args, dict):
@@ -156,19 +172,8 @@ def chat_with_calendar(
     if is_next_event_request(payload.message):
         try:
             events = get_calendar_events_form_google(account, current_time)
-        except RefreshError as exc:
-            raise HTTPException(
-                status_code=502,
-                detail="Google authorization could not be refreshed. Please sign in again.",
-            ) from exc
-        except HttpError as exc:
-            google_status = getattr(exc.resp, "status", None)
-            detail = (
-                "Google Calendar denied access. Check the app's Calendar permissions."
-                if google_status == 403
-                else "Google Calendar is temporarily unavailable."
-            )
-            raise HTTPException(status_code=502, detail=detail) from exc
+        except (RefreshError, HttpError) as exc:
+            raise google_calendar_http_exception(exc) from exc
 
         return {"reply": format_next_event(events, current_time)}
 
@@ -237,6 +242,7 @@ def chat_with_calendar(
             )
             continue
 
+        logger.info("Executing calendar tool call.")
         try:
             arguments = json.loads(tool_call.function.arguments or "{}")
             validate_args = validate_calendar_tool_args(arguments)
@@ -250,6 +256,8 @@ def chat_with_calendar(
                     "content": json.dumps(events),
                 }
             )
+        except (RefreshError, HttpError) as exc:
+            raise google_calendar_http_exception(exc) from exc
         except (TypeError, ValueError, json.JSONDecodeError) as exc:
             tool_results.append(
                 {
