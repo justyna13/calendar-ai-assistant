@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{API_DIR / 'calendar_assistant.db'}"
     token_encryption_key: SecretStr
     frontend_origin: str = "http://localhost:3000"
+    ollama_base_url: str = "http://localhost:11434/v1"
+    ollama_model: str = "qwen3:latest"
 
     model_config = SettingsConfigDict(
         env_file=API_DIR / ".env",

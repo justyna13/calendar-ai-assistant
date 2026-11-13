@@ -49,9 +49,7 @@ export default function CalendarEvents() {
         setEvents(calendarEvents);
         setState("ready");
       } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Couldn't load events.",
-        );
+        setErrorMessage(error instanceof Error ? error.message : "Couldn't load events.");
         setState("error");
       }
     }

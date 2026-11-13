@@ -2,6 +2,7 @@ import Link from "next/link";
 import ApiHealth from "@/app/components/ApiHealth";
 import GoogleLoginStatus from "./components/GoogleLoginStatus";
 import CalendarEvents from "./components/CalendarEvents";
+import ChatComposer from "./components/ChatComposer";
 
 const suggestions = [
   "What's on my calendar next week?",
@@ -69,33 +70,7 @@ export default function Home() {
           </div>
           <CalendarEvents />
         </div>
-
-        <div className="composer-wrap">
-          <div className="composer" aria-label="Assistant message composer">
-            <textarea
-              aria-label="Message your assistant"
-              placeholder="Ask about your calendar..."
-              rows={1}
-              disabled
-            />
-            <button
-              className="send-button"
-              type="button"
-              title="Send message"
-              aria-label="Send message"
-              disabled
-            >
-              <span className="send-icon" aria-hidden="true">
-                ↑
-              </span>
-            </button>
-          </div>
-          <div className="composer-meta">
-            <span>GOOGLE CALENDAR</span>
-            <span className="meta-divider" />
-            <span>CONNECTION REQUIRED</span>
-          </div>
-        </div>
+        <ChatComposer />
       </section>
     </main>
   );

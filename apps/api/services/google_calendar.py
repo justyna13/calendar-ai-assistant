@@ -9,10 +9,10 @@ from models.google_account import GoogleAccount
 from services.token_crypto import decrypt_token
 
 
-def list_events(
+def get_calendar_events_form_google(
     account: GoogleAccount,
     time_min: datetime,
-    time_max: datetime
+    time_max: datetime | None = None,
 ) -> list[dict[str, Any]]:
     credentials = Credentials(
         token=None,
@@ -30,17 +30,16 @@ def list_events(
         cache_discovery=False,
     )
 
-    results = (
-        calendar.events()
-        .list(
-            calendarId="primary",
-            timeMin=time_min.isoformat(),
-            timeMax=time_max.isoformat(),
-            maxResults=100,
-            singleEvents=True,
-            orderBy="startTime"
-        )
-        .execute()
-    )
+    list_arguments: dict[str, Any] = {
+        "calendarId": "primary",
+        "timeMin": time_min.isoformat(),
+        "maxResults": 100,
+        "singleEvents": True,
+        "orderBy": "startTime",
+    }
+    if time_max is not None:
+        list_arguments["timeMax"] = time_max.isoformat()
+
+    results = calendar.events().list(**list_arguments).execute()
 
     return results.get("items", [])

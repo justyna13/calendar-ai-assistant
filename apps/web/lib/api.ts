@@ -87,3 +87,28 @@ export const getCalendarEvents = async (
 
     return response.json();
 }
+
+export type TChatReply = {
+    reply: string;
+}
+
+export const chatWithCalendar = async (message: string): Promise<TChatReply> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ message })
+    });
+
+    if (!response.ok) {
+        const errorBody = (await response.json().catch(() => null)) as {
+            detail?: string;
+        } | null;
+
+        throw Error(errorBody?.detail ?? "Chat request failed");
+    }
+
+    return response.json();
+};

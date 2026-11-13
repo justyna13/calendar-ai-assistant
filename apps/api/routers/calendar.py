@@ -7,7 +7,7 @@ from googleapiclient.errors import HttpError
 from sqlalchemy.orm import Session
 
 from database import get_db
-from services.google_calendar import list_events
+from services.google_calendar import get_calendar_events_form_google
 from services.session_store import get_account_for_session
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
@@ -39,7 +39,7 @@ def get_calendar_events(
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     try:
-        return list_events(account, time_min, time_max)
+        return get_calendar_events_form_google(account, time_min, time_max)
     except RefreshError as exc:
         raise HTTPException(
             status_code=502,
